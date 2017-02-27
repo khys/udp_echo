@@ -10,7 +10,13 @@
 
 #define SRVPORT 49152
 
-int main()
+struct msg_echo {
+	unsigned short seq;
+	unsigned short reserve;
+	char msg[32];
+};
+
+int main(int argc, char *argv[])
 {
     int s, msglen, cnt;
     socklen_t fromlen;
