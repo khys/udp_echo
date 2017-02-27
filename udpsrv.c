@@ -8,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define SRVPORT 49152
+// #define SRVPORT 49152
 
 struct msg_echo {
 	unsigned short seq;
@@ -24,13 +24,17 @@ int main(int argc, char *argv[])
     char msg[80];
     struct sockaddr_in myskt, from;
 
-    myport = SRVPORT;
-
+    if (argc != 2) {
+		fprintf(stderr, "Usage: ./udpsrv <port number>\n");
+		exit(1);
+	} else if ((myport = strtol(argv[1], NULL, 10)) == 0) {
+        fprintf(stderr, "Error: bad port number\n");
+        exit(1);
+    }
     if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("socket");
         exit(1);
     }
-
     memset(&myskt, 0, sizeof myskt);
     myskt.sin_family = AF_INET;
     myskt.sin_port = htons(myport);
@@ -39,7 +43,6 @@ int main(int argc, char *argv[])
         perror("bind");
         exit(1);
     }
-
     for (;;) {
         fromlen = sizeof from;
         if ((cnt = recvfrom(s, msg, sizeof msg, 0,
