@@ -53,6 +53,14 @@ int main(int argc, char *argv[])
         echo.msg[strlen(echo.msg) - 1] = '\0';
         msglen = strlen(echo.msg) + sizeof(unsigned short) * 2;
 
+        if (!strcmp(echo.msg, "FIN")) {
+            printf("FIN received from client\n");
+            break;
+        } else if (echo.seq == 10) {
+            printf("Finished: seq = 10\n");
+            break;
+        }
+        
         srvlen = sizeof srvskt;
         if ((cnt = sendto(s, &echo, msglen, 0,
                           (struct sockaddr *)&srvskt, srvlen)) < 0) {
@@ -72,6 +80,5 @@ int main(int argc, char *argv[])
                cnt, inet_ntoa(from.sin_addr),
                ntohs(from.sin_port), echo.seq, echo.msg);
     }
-    // printf("EOF received from keyboard\n");
     close(s);
 }

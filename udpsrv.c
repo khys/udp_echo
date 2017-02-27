@@ -52,19 +52,21 @@ int main(int argc, char *argv[])
         }
         echo.msg[cnt - sizeof(unsigned short) * 2] = '\0';
         msglen = strlen(echo.msg) + sizeof(unsigned short) * 2;
-        if (!strcmp(echo.msg, "FIN")) {
-            printf("FIN received from client\n");
-            break;
-        } else if (echo.seq == 10) {
-            printf("Finished: seq = 10\n");
-            break;
-        }
+        /*
+          if (!strcmp(echo.msg, "FIN")) {
+          printf("FIN received from client\n");
+          break;
+          } else if (echo.seq == 10) {
+          printf("Finished: seq = 10\n");
+          break;
+          }
+        */
         printf("%d bytes recved: IP %s, port %d, seq %d, msg %s\n",
                cnt, inet_ntoa(from.sin_addr),
                ntohs(from.sin_port), echo.seq, echo.msg);
-
+        
         echo.seq++;
-
+        
         if ((cnt = sendto(s, &echo, msglen, 0,
                           (struct sockaddr *)&from, fromlen)) < 0) {
             perror("sendto");
