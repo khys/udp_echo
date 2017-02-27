@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     int s, msglen, cnt;
     socklen_t srvlen, fromlen;
     in_port_t srvport;
-    char msg[80];
+    struct msg_echo echo;
     struct sockaddr_in srvskt, from;
 
     if (argc != 3) {
@@ -42,16 +42,19 @@ int main(int argc, char *argv[])
         perror("inet_aton");
         exit(1);
     }
+    
+    echo.seq = 0;
+    
     for (;;) {
-        printf("message to be sent: ");
-        if (fgets(msg, sizeof msg, stdin) == NULL) {
+        printf("message to be sent (FIN to exit): ");
+        if (fgets(echo.msg, sizeof echo.msg, stdin) == NULL) {
             break;
         }
-        msg[strlen(msg) - 1] = '\0';
-        msglen = strlen(msg);
+        echo.msg[strlen(echo.msg) - 1] = '\0';
+        msglen = strlen(echo.msg) + sizeof(unsigned short) * 2;
 
         srvlen = sizeof srvskt;
-        if ((cnt = sendto(s, msg, msglen, 0,
+        if ((cnt = sendto(s, &echo, msglen, 0,
                           (struct sockaddr *)&srvskt, srvlen)) < 0) {
             perror("sendto");
             exit(1);
@@ -59,16 +62,16 @@ int main(int argc, char *argv[])
         printf("%d bytes sent\n", cnt);
 
         fromlen = sizeof from;
-        if ((cnt = recvfrom(s, msg, sizeof msg, 0,
+        if ((cnt = recvfrom(s, &echo, sizeof echo, 0,
                             (struct sockaddr *)&from, &fromlen)) < 0) {
             perror("recvfrom");
             exit(1);
         }
-        msg[cnt] = '\0';
-        printf("%d bytes recved: IP %s, port %d, msg %s\n",
+        echo.msg[cnt - sizeof(unsigned short) * 2] = '\0';
+        printf("%d bytes recved: IP %s, port %d, seq %d, msg %s\n",
                cnt, inet_ntoa(from.sin_addr),
-               ntohs(from.sin_port), msg);
+               ntohs(from.sin_port), echo.seq, echo.msg);
     }
-    printf("EOF received from keyboard\n");
+    // printf("EOF received from keyboard\n");
     close(s);
 }
